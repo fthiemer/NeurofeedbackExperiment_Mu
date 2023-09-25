@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 
 /// <summary>
@@ -29,23 +28,18 @@ public class GameController : MonoBehaviour
      */
     public static GameController Instance;
     [SerializeField] private GameObject ball, spline;
+    [SerializeField] private GameObject coinCubePrefab;
+    private GameObject[] coins;
     private Vector3[] positionList;
-    
+
     private void Awake()
     {
+        // Singleton
         if (Instance == null)
         {
             Instance = this;
         }
-    }
-
-    private void Start()
-    {
-        //fill position list
-        foreach (var childTransform in spline.transform.GetComponentsInChildren<Transform>())
-        {
-            
-        }
+        InitializeCoins();
     }
 
     private void Update()
@@ -60,14 +54,25 @@ public class GameController : MonoBehaviour
         
     }
     
-    
-    
-    
+    private void InitializeCoins()
+    {
+        // Initialize Coins
+        var coinCubeRotation = coinCubePrefab.transform.rotation;
+        coins = new GameObject[spline.transform.childCount];
+        for (int i = 0; i < spline.transform.childCount; i++)
+        {
+            coins[i] = Instantiate(coinCubePrefab, spline.transform.GetChild(i).position,
+                Quaternion.Euler(coinCubeRotation.x, Random.Range(0f, 360f), coinCubeRotation.z));
+        }
+    }
     
     public void ResetRound()
     {
-        // Spawn all cubes on position 
-        
+        // Reactivate all coins
+        foreach (var coin in coins)
+        {
+            coin.gameObject.SetActive(true);
+        }
     }
     
     
