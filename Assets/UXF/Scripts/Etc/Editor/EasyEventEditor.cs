@@ -596,7 +596,7 @@ public class EasyEventEditorDrawer : PropertyDrawer
 
             // The fun thing is that if Unity just made the first bool arg true internally, this whole thing would be unnecessary.
             state.reorderableList = new ReorderableList(propertyForState.serializedObject, persistentListeners, true, true, true, true);
-            state.reorderableList.elementHeight = 43; // todo: actually find proper constant for this. 
+            state.reorderableList.elementHeight = 43; 
             state.reorderableList.drawHeaderCallback += DrawHeaderCallback;
             state.reorderableList.drawElementCallback += DrawElementCallback;
             state.reorderableList.onSelectCallback += SelectCallback;
