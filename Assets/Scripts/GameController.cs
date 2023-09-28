@@ -1,5 +1,7 @@
 using System;
 using BezierSolution;
+using Sirenix.OdinInspector;
+using UnityEditor;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -39,7 +41,7 @@ public class GameController : MonoBehaviour
 
     [SerializeField] private Color 
         artifactColor = Color.red, // Theta or Beta too high
-        normalColor = new(0f,220f,0f,255f); //green taken from Berger et al. 2021 with ColorCop
+        normalColor = new(0f,190f,0f,255f); //green taken from Berger et al. 2021 with ColorCop
 
     public enum BallState {
         OverThreshold,

@@ -176,7 +176,7 @@ MonoBehaviour:
   coinCubePrefab: {fileID: 2695923514589245514, guid: ce55a483afd098b4e8f5ccec04bc6219,
     type: 3}
   artifactColor: {r: 1, g: 0, b: 0, a: 1}
-  normalColor: {r: 0, g: 220, b: 0, a: 255}
+  normalColor: {r: 0, g: 0.8627451, b: 0, a: 255}
   ballState: 0
 --- !u!1 &370295285
 GameObject:
@@ -206,7 +206,7 @@ Light:
   serializedVersion: 10
   m_Type: 1
   m_Shape: 0
-  m_Color: {r: 1, g: 0.972549, b: 0.92156863, a: 1}
+  m_Color: {r: 1, g: 0.85882354, b: 0.53333336, a: 1}
   m_Intensity: 2.59
   m_Range: 10
   m_SpotAngle: 30
@@ -249,7 +249,7 @@ Light:
   m_Lightmapping: 4
   m_LightShadowCasterMode: 0
   m_AreaSize: {x: 1, y: 1}
-  m_BounceIntensity: 0.25
+  m_BounceIntensity: 1.27
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
   m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
