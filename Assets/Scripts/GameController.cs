@@ -49,13 +49,24 @@ public class GameController : MonoBehaviour
         ArtifactsTooHigh //Beta or Theta too high
     }
 
-    public BallState ballState = BallState.UnderThreshold;
+    public BallState currentBallState;
+    private bool currentBallStateChanged;
     private GameObject[] coins;
     private Vector3[] positionList;
     private Material ballRendererMat;
     private BallRotate ballRotate;
     private Vector3 initialBallParentPosition;
-    
+
+    public BallState CurrentBallState
+    {
+        private get => currentBallState;
+        set
+        {
+            currentBallState = value;
+            currentBallStateChanged = true;
+        }
+    }
+
 
     private void Awake()
     {
@@ -77,31 +88,36 @@ public class GameController : MonoBehaviour
             Instance = this;
         }
         InitializeCoins();
+        currentBallState = BallState.OverThreshold;
+        currentBallStateChanged = true;
     }
 
     private void Update()
     {
+        if (!currentBallStateChanged) return;
         SetBallMovementAndColor();
     }
     
     
     private void SetBallMovementAndColor()
     {
-        ballRotate.rotate = ballState == BallState.OverThreshold;
-        bezierWalker.speed = ballState == BallState.OverThreshold ? MovementSpeed : 0f;
-        ballRendererMat.color = ballState == BallState.ArtifactsTooHigh ? artifactColor : normalColor;
+        ballRotate.rotate = currentBallState == BallState.OverThreshold;
+        bezierWalker.speed = currentBallState == BallState.OverThreshold ? MovementSpeed : 0f;
+        ballRendererMat.color = currentBallState == BallState.ArtifactsTooHigh ? artifactColor : normalColor;
+        // reset bool
+        currentBallStateChanged = false;
     }
     
     
     private void InitializeCoins()
     {
         // Initialize Coins
-        var coinCubeRotation = coinCubePrefab.transform.rotation;
+        //var coinCubeRotation = coinCubePrefab.transform.rotation;
         coins = new GameObject[spline.transform.childCount];
         for (var i = 0; i < spline.transform.childCount; i++)
         {
-            coins[i] = Instantiate(coinCubePrefab, spline.transform.GetChild(i).position,
-                Quaternion.Euler(coinCubeRotation.x, Random.Range(0f, 360f), coinCubeRotation.z));
+            coins[i] = Instantiate(coinCubePrefab, spline.transform.GetChild(i).position,coinCubePrefab.transform.localRotation);
+            //Quaternion.Euler(coinCubeRotation.x, Random.Range(0f, 360f), coinCubeRotation.z)
         }
     }
     
