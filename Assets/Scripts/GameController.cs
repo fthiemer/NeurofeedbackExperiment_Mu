@@ -1,7 +1,10 @@
+using System;
+using BezierSolution;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 /// <summary>
-/// Spawns cubes and controll ball movement and color. Singleton.
+/// Spawns cubes and control ball movement and color. Singleton.
 /// </summary>
 public class GameController : MonoBehaviour
 {
@@ -26,14 +29,46 @@ public class GameController : MonoBehaviour
      * movements/blinking or muscle artifacts. This means the ball would only move
      * when both the artifact and SMR values would be in the desired, predefined range.
      */
+    
+    private const float MovementSpeed = 1.5f; // 
+    
     public static GameController Instance;
-    [SerializeField] private GameObject ball, spline;
+    [SerializeField] private GameObject ball, ballParent, spline;
+    [SerializeField] private BezierWalkerWithSpeed bezierWalker;
     [SerializeField] private GameObject coinCubePrefab;
+
+    [SerializeField] private Color 
+        artifactColor = Color.red, // Theta or Beta too high
+        normalColor = new(0f,220f,0f,255f); //green taken from Berger et al. 2021 with ColorCop
+
+    public enum BallState {
+        OverThreshold,
+        UnderThreshold,
+        ArtifactsTooHigh //Beta or Theta too high
+    }
+
+    public BallState ballState = BallState.UnderThreshold;
     private GameObject[] coins;
     private Vector3[] positionList;
+    private Material ballRendererMat;
+    private BallRotate ballRotate;
+    private Vector3 initialBallParentPosition;
+    
 
     private void Awake()
     {
+        // Initialize Variables
+        var ballRenderer = ball.GetComponent<Renderer>();
+        if (ballRenderer is null) Debug.LogError("Ball Renderer is null");
+        ballRendererMat = ballRenderer.material;
+        initialBallParentPosition = ballParent.transform.position;
+        ballRotate = ball.GetComponent<BallRotate>();
+        
+        // set angular velocity of ball to be realistic
+        float radius = ball.GetComponent<SphereCollider>().radius;
+        var angularVelocity = MovementSpeed / (2 * Math.PI * Math.Pow(radius, 2));
+        ballRotate.angularVelocityInDegree = Quaternion.Euler(Vector3.right * (float) angularVelocity);
+        
         // Singleton
         if (Instance == null)
         {
@@ -46,20 +81,22 @@ public class GameController : MonoBehaviour
     {
         SetBallMovementAndColor();
     }
-
-
-
+    
+    
     private void SetBallMovementAndColor()
     {
-        
+        ballRotate.rotate = ballState == BallState.OverThreshold;
+        bezierWalker.speed = ballState == BallState.OverThreshold ? MovementSpeed : 0f;
+        ballRendererMat.color = ballState == BallState.ArtifactsTooHigh ? artifactColor : normalColor;
     }
+    
     
     private void InitializeCoins()
     {
         // Initialize Coins
         var coinCubeRotation = coinCubePrefab.transform.rotation;
         coins = new GameObject[spline.transform.childCount];
-        for (int i = 0; i < spline.transform.childCount; i++)
+        for (var i = 0; i < spline.transform.childCount; i++)
         {
             coins[i] = Instantiate(coinCubePrefab, spline.transform.GetChild(i).position,
                 Quaternion.Euler(coinCubeRotation.x, Random.Range(0f, 360f), coinCubeRotation.z));
@@ -68,12 +105,17 @@ public class GameController : MonoBehaviour
     
     public void ResetRound()
     {
+        RespawnCoins();
+        // Reset Ball Position
+        ballParent.transform.position = ball.transform.position = initialBallParentPosition;
+    }
+
+    public void RespawnCoins()
+    {
         // Reactivate all coins
         foreach (var coin in coins)
         {
             coin.gameObject.SetActive(true);
         }
     }
-    
-    
 }
