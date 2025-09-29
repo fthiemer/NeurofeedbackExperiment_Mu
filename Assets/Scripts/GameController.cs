@@ -1,7 +1,5 @@
 using System;
 using BezierSolution;
-using Sirenix.OdinInspector;
-using UnityEditor;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -44,26 +42,30 @@ public class GameController : MonoBehaviour
         normalColor = new(0f,190f,0f,255f); //green taken from Berger et al. 2021 with ColorCop
 
     public enum BallState {
-        OverThreshold,
+        Stop,
         UnderThreshold,
-        ArtifactsTooHigh //Beta or Theta too high
+        OverThreshold,
+        ArtifactsTooHigh, //Beta or Theta too high
     }
 
-    public BallState currentBallState;
-    private bool currentBallStateChanged;
+    private BallState currentBallStateBackingField = BallState.Stop;
     private GameObject[] coins;
     private Vector3[] positionList;
     private Material ballRendererMat;
     private BallRotate ballRotate;
     private Vector3 initialBallParentPosition;
+    private Quaternion angularVelocityInDegreesMovement;
+    private readonly Quaternion angularVelocityInDegreesNoMovement = Quaternion.Euler(Vector3.zero);
 
     public BallState CurrentBallState
     {
-        private get => currentBallState;
-        set
-        {
-            currentBallState = value;
-            currentBallStateChanged = true;
+        private get => currentBallStateBackingField;
+        set {
+            Debug.Log("Current BallState: " + value);
+            if (currentBallStateBackingField == value) return; //Only change behaviour on state change
+            Debug.Log("After if: " + value);
+            currentBallStateBackingField = value;
+            SetBallMovementAndColor();
         }
     }
 
@@ -77,37 +79,30 @@ public class GameController : MonoBehaviour
         initialBallParentPosition = ballParent.transform.position;
         ballRotate = ball.GetComponent<BallRotate>();
         
-        // set angular velocity of ball to be realistic
-        float radius = ball.GetComponent<SphereCollider>().radius;
+        // calculate angular velocity of ball to be realistic
+        var radius = ball.GetComponent<SphereCollider>().radius;
         var angularVelocity = MovementSpeed / (2 * Math.PI * Math.Pow(radius, 2));
-        ballRotate.angularVelocityInDegree = Quaternion.Euler(Vector3.right * (float) angularVelocity);
+        angularVelocityInDegreesMovement = Quaternion.Euler(Vector3.right * (float) angularVelocity);
         
         // Singleton
         if (Instance == null)
         {
             Instance = this;
+        } else if (Instance != this) {
+            Destroy(gameObject);
         }
         InitializeCoins();
-        currentBallState = BallState.OverThreshold;
-        currentBallStateChanged = true;
     }
-
-    private void Update()
-    {
-        if (!currentBallStateChanged) return;
-        SetBallMovementAndColor();
-    }
-    
     
     private void SetBallMovementAndColor()
     {
-        ballRotate.rotate = currentBallState == BallState.OverThreshold;
-        bezierWalker.speed = currentBallState == BallState.OverThreshold ? MovementSpeed : 0f;
-        ballRendererMat.color = currentBallState == BallState.ArtifactsTooHigh ? artifactColor : normalColor;
-        // reset bool
-        currentBallStateChanged = false;
+        Debug.Log("Johoho");
+        var isOverThreshold = currentBallStateBackingField == BallState.OverThreshold;
+        ballRotate.rotate = isOverThreshold;
+        bezierWalker.speed = isOverThreshold ? MovementSpeed : 0f;
+        ballRotate.angularVelocityInDegree = isOverThreshold ? angularVelocityInDegreesMovement : angularVelocityInDegreesNoMovement;
+        ballRendererMat.color = currentBallStateBackingField == BallState.ArtifactsTooHigh ? artifactColor : normalColor;
     }
-    
     
     private void InitializeCoins()
     {
